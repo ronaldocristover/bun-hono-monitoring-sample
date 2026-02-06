@@ -1,0 +1,50 @@
+version: "3.8"
+
+services:
+  app:
+    build: ../app
+    ports:
+      - "3000:3000"
+
+  prometheus:
+    image: prom/prometheus
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    ports:
+      - "9090:9090"
+
+  grafana:
+    image: grafana/grafana
+    ports:
+      - "3001:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    volumes:
+      - grafana-data:/var/lib/grafana
+
+  loki:
+    image: grafana/loki
+    ports:
+      - "3100:3100"
+
+  promtail:
+    image: grafana/promtail
+    volumes:
+      - /var/log:/var/log
+      - ./promtail.yaml:/etc/promtail/promtail.yaml
+
+  node-exporter:
+    image: prom/node-exporter
+    network_mode: host
+
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor
+    network_mode: host
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+
+volumes:
+  grafana-data:
